@@ -15,6 +15,7 @@ func main() {
 	addKey := flag.Bool("add-key", false, "Operation for adding a key to a bucket")
 	removeKey := flag.Bool("remove-key", false, "Operation for removing a key from a bucket")
 	getValue := flag.Bool("get-value", false, "Operation for fetching a key-value from a bucket by the provided keyname")
+	randomItem := flag.Bool("random-item", false, "Operation for fetching a key-value pair from the provided bucket name")
 
 	bucketName := flag.String("bucket-name", "", "The name of bucket you want to apply the operation on")
 	keyName := flag.String("key", "", "The key for which you are performing the operation")
@@ -96,6 +97,20 @@ func main() {
 			return
 		}
 		fmt.Printf("Bucket: %s\nKey: %s\nValue: %s\n", *bucketName, *keyName, *outputValuePtr)
+		return
+	}
+
+	if *randomItem {
+		if *bucketName == "" {
+			log.Fatal(errors.New("bucket name not provided for fetching the random key-value pair from"))
+			return
+		}
+		randomKeyPtr, randomValuePtr, err := helpers.RandomItem(db, *bucketName)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		fmt.Printf("Bucket: %s\nAnd your random item from the above bucket is-----\nKey: %s\nValue: %s\n", *bucketName, *randomKeyPtr, *randomValuePtr)
 		return
 	}
 }
