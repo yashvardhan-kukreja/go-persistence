@@ -3,6 +3,8 @@ package helpers
 import (
 	"errors"
 	"github.com/boltdb/bolt"
+	"math/rand"
+	"time"
 )
 
 //CreateBucket (db *bolt.DB, name string) - Helper for creating a bucket
@@ -99,6 +101,41 @@ func GetValue(db *bolt.DB, bucketName string, key string) (*string, error) {
 		return nil, err
 	}
 	return &outputValue, nil
+}
+
+
+//RandomItem (db *bolt.DB, bucketName string) - Helper for getting a random key-value pair from the provided bucket name
+func RandomItem(db *bolt.DB, bucketName string) (*string, *string, error) {
+	randomKey := ""
+	randomValue := ""
+
+	rand.Seed(time.Now().Unix())
+
+	err := db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(bucketName))
+
+		keys := []string{}
+
+		_ = bucket.ForEach(func(k, v []byte) error {
+			keys = append(keys, string(k))
+			return nil
+		})
+
+		randomKey = keys[rand.Intn(len(keys))]
+		return nil
+	})
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = db.View(func(tx *bolt.Tx) error {
+		valueByte := tx.Bucket([]byte(bucketName)).Get([]byte(randomKey))
+		randomValue = string(valueByte)
+		return nil
+	})
+
+	return &randomKey, &randomValue, nil
 }
 
 
